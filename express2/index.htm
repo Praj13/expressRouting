@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+</head>
+<body>
+    <h1>Notes</h1>
+    <ul id="notes-list"></ul>
+    <input type="text" id="note-input" placeholder="New note">
+    <button onclick="addNote()">Add Note</button>
+
+    <script>
+        async function fetchNotes() {
+            const res = await fetch('/api/notes');
+            const notes = await res.json();
+            const list = document.getElementById('notes-list');
+            list.innerHTML = notes.map(note => 
+                `<li>${note.text} <button onclick="deleteNote(${note.id})">❌</button></li>`
+            ).join('');
+        }
+
+        async function addNote() {
+            const input = document.getElementById('note-input');
+            if (!input.value) return;
+            await fetch('/api/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: input.value })
+            });
+            input.value = '';
+            fetchNotes();
+        }
+
+        async function deleteNote(id) {
+            await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+            fetchNotes();
+        }
+
+        fetchNotes();
+    </script>
+</body>
+</html>
